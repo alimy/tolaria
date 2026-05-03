@@ -1,4 +1,5 @@
 import { projectMobileNotes, type MobileNote, type MobileNoteSource } from './mobileNoteProjection'
+import { createFixtureMobileVaultRepository } from './mobileVaultRepository'
 
 export type { MobileNote } from './mobileNoteProjection'
 
@@ -66,6 +67,8 @@ const noteContent: MobileNoteSource[] = [
 ]
 
 export const notes: MobileNote[] = projectMobileNotes(noteContent)
+
+export const demoVaultRepository = createFixtureMobileVaultRepository(noteContent)
 
 export const sidebarSections = [
   {

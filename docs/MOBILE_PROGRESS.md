@@ -8,7 +8,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 
 - Branch: `codex/mobile`
 - Active phase: Phase 2 - Mobile Shell
-- Active slice: Separate mobile note projection from fixtures
+- Active slice: Define mobile vault repository boundary
 - Push policy: commit locally; do not push unless explicitly requested
 - Validation target: iPad/iOS simulator first
 
@@ -36,6 +36,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Pinned Expo runtime dependencies to the versions expected by Expo 55 after the initial generated versions failed iOS bundle export (`react-native@0.83.6`, `react@19.2.0`, matching safe-area/svg versions).
 - Extracted compact phone navigation into a pure tested state machine so future swipe gestures can dispatch explicit events instead of mutating panels ad hoc.
 - Extracted mobile note projection into a pure module that turns raw vault-like note records into the list/editor shape used by the mobile shell.
+- Added a minimal mobile vault repository contract plus fixture implementation so app-local vault storage and git sync can plug in behind `listNotes` / `readNote` later.
 
 ## Next Action
 
@@ -90,6 +91,10 @@ Continue Phase 2 with the next mobile shell slice:
 - `pnpm --filter @tolaria/mobile typecheck` passed after note projection extraction.
 - CodeScene after note projection extraction: `apps/mobile/src/mobileNoteProjection.ts` and `apps/mobile/src/mobileNoteProjection.test.ts` scored `10`; `apps/mobile/src/demoData.ts` returned no scorable code and no findings.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after note projection extraction.
+- `pnpm --filter @tolaria/mobile test` passed after mobile vault repository extraction: 4 files / 11 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after mobile vault repository extraction.
+- CodeScene after mobile vault repository extraction: `apps/mobile/src/mobileVaultRepository.ts` and `apps/mobile/src/mobileVaultRepository.test.ts` scored `10`; `apps/mobile/src/demoData.ts` still returned no scorable code and no findings.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after mobile vault repository extraction.
 
 ## Risks / Watch Items
 
