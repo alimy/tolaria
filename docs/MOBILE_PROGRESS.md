@@ -8,7 +8,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 
 - Branch: `codex/mobile`
 - Active phase: Phase 2 - Mobile Shell
-- Active slice: Expand TenTap Markdown serialization
+- Active slice: Add mobile editor draft save boundary
 - Push policy: commit locally; do not push unless explicitly requested
 - Validation target: iPad/iOS simulator first
 
@@ -57,6 +57,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Wired the mobile shell to load its starter notes through the native Expo FileSystem storage driver and stored repository path, with fixture notes retained as the fallback while storage initializes.
 - Expanded supported TenTap HTML serialization to include H1-H6 headings, ordered lists, task-list markers, inline strong/emphasis/code, and links while continuing to block unsupported block HTML.
 - Split the mobile editor HTML serializer into its own CodeScene-10 module so the draft boundary stays small.
+- Added a mobile editor draft save boundary that writes persistable canonical Markdown drafts to vault storage and refuses blocked drafts.
 
 ## Next Action
 
@@ -64,7 +65,7 @@ Continue Phase 2 with the next mobile shell slice:
 
 1. Dismiss or suppress Expo Go's first-run tools modal during simulator QA so screenshots capture the app without the overlay.
 2. Expand the serializer for additional TenTap output needed by real notes: links, emphasis, code, headings, ordered lists, and task lists.
-3. Add a save command boundary that writes persistable TenTap Markdown drafts back to mobile vault storage.
+3. Wire `MobileEditorAdapter` draft callbacks to the save boundary with explicit dirty/saved/blocked UI state.
 
 ## Verification Log
 
@@ -176,6 +177,11 @@ Continue Phase 2 with the next mobile shell slice:
 - `pnpm --filter @tolaria/mobile typecheck` passed after expanded TenTap serialization.
 - CodeScene after expanded TenTap serialization: `apps/mobile/src/mobileEditorDraft.ts`, `apps/mobile/src/mobileEditorDraft.test.ts`, and `apps/mobile/src/mobileEditorHtmlMarkdown.ts` scored `10`.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after expanded TenTap serialization.
+- `pnpm --filter @tolaria/mobile test -- src/mobileEditorDraftSave.test.ts` passed after editor draft save boundary: 13 files / 44 tests.
+- `pnpm --filter @tolaria/mobile test` passed after editor draft save boundary: 13 files / 44 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after editor draft save boundary.
+- CodeScene after editor draft save boundary: `apps/mobile/src/mobileEditorDraftSave.ts` and `apps/mobile/src/mobileEditorDraftSave.test.ts` scored `10`.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after editor draft save boundary.
 
 ## Risks / Watch Items
 
