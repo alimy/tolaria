@@ -12,8 +12,17 @@ export type MobileEditorDocument = {
 }
 
 export type MobileEditorDocumentInput = {
+  id: string
   title: string
   content: string
+}
+
+export type MobileEditorDraft = {
+  noteId: string
+  sourceMarkdown: string
+  editorHtml: string
+  persistable: false
+  blockedReason: 'markdownSerializerMissing'
 }
 
 export function createMobileEditorDocument(input: MobileEditorDocumentInput): MobileEditorDocument {
@@ -21,24 +30,40 @@ export function createMobileEditorDocument(input: MobileEditorDocumentInput): Mo
 
   return {
     title: input.title,
-    blocks: createBlocks(body, input.title),
+    blocks: createBlocks({ body, title: input.title }),
   }
 }
 
 export function createMobileEditorHtml(document: MobileEditorDocument) {
-  return `<h1>${escapeHtml(document.title)}</h1>${document.blocks.map(blockToHtml).join('')}`
+  return `<h1>${escapeHtml({ value: document.title })}</h1>${document.blocks.map(blockToHtml).join('')}`
 }
 
-function createBlocks(body: string, title: string) {
+export function createMobileEditorDraft({
+  editorHtml,
+  note,
+}: {
+  editorHtml: string
+  note: MobileEditorDocumentInput
+}): MobileEditorDraft {
+  return {
+    noteId: note.id,
+    sourceMarkdown: note.content,
+    editorHtml,
+    persistable: false,
+    blockedReason: 'markdownSerializerMissing',
+  }
+}
+
+function createBlocks({ body, title }: { body: string; title: string }) {
   return body
     .split('\n')
     .map((line) => line.trim())
-    .filter((line) => line && !isTitleHeading(line, title))
-    .map(createBlock)
+    .filter((line) => line && !isTitleHeading({ line, title }))
+    .map((line, index) => createBlock({ index, line }))
 }
 
-function createBlock(line: string, index: number): MobileEditorBlock {
-  const bulletText = bulletContent(line)
+function createBlock({ index, line }: { index: number; line: string }): MobileEditorBlock {
+  const bulletText = bulletContent({ line })
 
   return {
     id: `${index}:${line}`,
@@ -47,21 +72,21 @@ function createBlock(line: string, index: number): MobileEditorBlock {
   }
 }
 
-function bulletContent(line: string) {
+function bulletContent({ line }: { line: string }) {
   const match = /^[-*]\s+(.+)$/.exec(line)
   return match?.[1] ?? null
 }
 
-function isTitleHeading(line: string, title: string) {
+function isTitleHeading({ line, title }: { line: string; title: string }) {
   return line === `# ${title}`
 }
 
 function blockToHtml(block: MobileEditorBlock) {
-  const text = escapeHtml(block.text)
+  const text = escapeHtml({ value: block.text })
   return block.kind === 'bullet' ? `<ul><li>${text}</li></ul>` : `<p>${text}</p>`
 }
 
-function escapeHtml(value: string) {
+function escapeHtml({ value }: { value: string }) {
   return value
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

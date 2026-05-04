@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { createMobileEditorDocument, createMobileEditorHtml } from './mobileEditorDocument'
+import { createMobileEditorDocument, createMobileEditorDraft, createMobileEditorHtml } from './mobileEditorDocument'
 
 describe('mobile editor document', () => {
   it('strips frontmatter and title heading from the displayed editor body', () => {
     expect(
       createMobileEditorDocument({
+        id: 'workflow',
         title: 'Workflow Orchestration Essay',
         content: [
           '---',
@@ -30,6 +31,7 @@ describe('mobile editor document', () => {
 
   it('keeps colon paragraphs instead of treating them as frontmatter', () => {
     const document = createMobileEditorDocument({
+      id: 'monday',
       title: 'Notes for Monday',
       content: '# Notes for Monday\n\nBottom line up front: ship the smallest useful slice.',
     })
@@ -45,6 +47,7 @@ describe('mobile editor document', () => {
 
   it('normalizes markdown bullets for the native placeholder surface', () => {
     const document = createMobileEditorDocument({
+      id: 'plan',
       title: 'Plan',
       content: '# Plan\n\n- Sidebar\n* Note list',
     })
@@ -83,5 +86,24 @@ describe('mobile editor document', () => {
     expect(html).toBe(
       '<h1>Tolaria &lt;mobile&gt;</h1><p>Use TenTap &amp; keep markdown durable</p><ul><li>Escape &quot;quotes&quot;</li></ul>',
     )
+  })
+
+  it('keeps TenTap HTML drafts blocked from vault persistence until markdown serialization exists', () => {
+    expect(
+      createMobileEditorDraft({
+        note: {
+          id: 'workflow',
+          title: 'Workflow',
+          content: '# Workflow\n\nOriginal markdown',
+        },
+        editorHtml: '<h1>Workflow</h1><p>Edited content</p>',
+      }),
+    ).toEqual({
+      noteId: 'workflow',
+      sourceMarkdown: '# Workflow\n\nOriginal markdown',
+      editorHtml: '<h1>Workflow</h1><p>Edited content</p>',
+      persistable: false,
+      blockedReason: 'markdownSerializerMissing',
+    })
   })
 })

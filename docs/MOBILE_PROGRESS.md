@@ -8,7 +8,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 
 - Branch: `codex/mobile`
 - Active phase: Phase 2 - Mobile Shell
-- Active slice: Spike TenTap behind `MobileEditorAdapter`
+- Active slice: Add TenTap draft/save boundary
 - Push policy: commit locally; do not push unless explicitly requested
 - Validation target: iPad/iOS simulator first
 
@@ -48,13 +48,14 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Extracted the mobile editor surface behind `MobileEditorAdapter` with a tested document projection so TenTap can replace the placeholder surface without changing shell navigation.
 - Installed TenTap and Expo-compatible `react-native-webview`, then wired TenTap into `MobileEditorAdapter` with tested HTML generation from the mobile editor document projection.
 - Created [ADR-0110](./adr/0110-tentap-mobile-editor-spike.md) for the TenTap mobile editor spike and its acceptance gates.
+- Added a TenTap draft callback boundary that captures editor HTML but explicitly marks it non-persistable until Markdown serialization exists, preventing HTML from becoming canonical vault content by accident.
 
 ## Next Action
 
 Continue Phase 2 with the next mobile shell slice:
 
 1. Dismiss or suppress Expo Go's first-run tools modal during simulator QA so screenshots capture the app without the overlay.
-2. Add markdown round-trip/save boundaries for the TenTap editor path while preserving Markdown as canonical storage.
+2. Implement a real Markdown serializer/round-trip path for supported TenTap output.
 3. Add the first native storage adapter around the vault config/repository contracts after the editor spike confirms the app shape.
 
 ## Verification Log
@@ -137,6 +138,11 @@ Continue Phase 2 with the next mobile shell slice:
 - CodeScene after TenTap wiring: `apps/mobile/src/MobileEditorAdapter.tsx`, `apps/mobile/src/mobileEditorDocument.ts`, `apps/mobile/src/mobileEditorDocument.test.ts`, and `apps/mobile/src/styles/editorStyles.ts` scored `10`.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after TenTap wiring; iOS bundle size is now about 11 MB and includes TenTap toolbar assets.
 - `pnpm --filter @tolaria/mobile exec expo start --ios --clear` launched on `iPad Pro 13-inch (M4)`; screenshot captured at `/tmp/tolaria-mobile-tentap-ipad.png`. The app rendered with the TenTap-backed editor behind Expo Go's first-run Tools modal and no red runtime error overlay appeared.
+- `pnpm test -- src/components/SearchPanel.test.tsx` passed after a transient full-hook failure in the unrelated desktop SearchPanel arrow-key test.
+- `pnpm --filter @tolaria/mobile test -- src/mobileEditorDocument.test.ts` passed after the TenTap draft boundary: 8 files / 29 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after the TenTap draft boundary.
+- CodeScene after the TenTap draft boundary: `apps/mobile/src/MobileEditorAdapter.tsx`, `apps/mobile/src/mobileEditorDocument.ts`, and `apps/mobile/src/mobileEditorDocument.test.ts` scored `10`.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after the TenTap draft boundary.
 
 ## Risks / Watch Items
 
