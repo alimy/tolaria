@@ -35,6 +35,11 @@ type VaultFileInput = {
   path: string
 }
 
+type DirectoryInput = {
+  fileSystem: ExpoMobileVaultFileSystem
+  uri: string
+}
+
 export function createExpoMobileVaultStorage(
   fileSystem: ExpoMobileVaultFileSystem,
 ): MobileVaultStorageDriver {
@@ -120,7 +125,7 @@ async function readVaultFile(input: VaultFileInput): Promise<MobileVaultFile> {
 
 async function ensureVaultRoot(fileSystem: ExpoMobileVaultFileSystem, vault: MobileVaultConfig) {
   const rootUri = vaultRootUri(fileSystem, vault)
-  await fileSystem.makeDirectoryAsync(rootUri, { intermediates: true })
+  await ensureDirectory({ fileSystem, uri: rootUri })
 
   return rootUri
 }
@@ -128,10 +133,21 @@ async function ensureVaultRoot(fileSystem: ExpoMobileVaultFileSystem, vault: Mob
 async function ensureParentDirectory(input: VaultFileInput) {
   const parentPath = input.path.split('/').slice(0, -1).join('/')
   if (parentPath) {
-    await input.fileSystem.makeDirectoryAsync(
-      appendUri({ root: input.rootUri, segments: [parentPath] }),
-      { intermediates: true },
-    )
+    await ensureDirectory({
+      fileSystem: input.fileSystem,
+      uri: appendUri({ root: input.rootUri, segments: [parentPath] }),
+    })
+  }
+}
+
+async function ensureDirectory(input: DirectoryInput) {
+  const info = await input.fileSystem.getInfoAsync(input.uri)
+  if (info.exists && !info.isDirectory) {
+    throw new Error(`Mobile vault path is not a directory: ${input.uri}`)
+  }
+
+  if (!info.exists) {
+    await input.fileSystem.makeDirectoryAsync(input.uri, { intermediates: true })
   }
 }
 

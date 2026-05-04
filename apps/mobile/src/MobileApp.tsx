@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   FlatList,
   Pressable,
@@ -17,7 +17,8 @@ import {
   PencilSimple,
   SlidersHorizontal,
 } from 'phosphor-react-native'
-import { MobileNote, notes, sidebarSections } from './demoData'
+import { MobileNote, notes as fallbackNotes, sidebarSections } from './demoData'
+import { loadDemoVaultNotes } from './mobileDemoVault'
 import { MobileEditorAdapter } from './MobileEditorAdapter'
 import {
   createCompactNavigationState,
@@ -34,11 +35,29 @@ export function MobileApp() {
   const { width } = useWindowDimensions()
   const isTablet = width >= 820
   const showsProperties = width >= 1120
-  const [compactNavigation, setCompactNavigation] = useState(() => createCompactNavigationState(notes[0].id))
+  const [availableNotes, setAvailableNotes] = useState(fallbackNotes)
+  const [compactNavigation, setCompactNavigation] = useState(() => createCompactNavigationState(fallbackNotes[0].id))
   const selectedNote = useMemo(
-    () => notes.find((note) => note.id === compactNavigation.selectedNoteId) ?? notes[0],
-    [compactNavigation.selectedNoteId],
+    () => availableNotes.find((note) => note.id === compactNavigation.selectedNoteId) ?? availableNotes[0],
+    [availableNotes, compactNavigation.selectedNoteId],
   )
+
+  useEffect(() => {
+    let isActive = true
+
+    loadDemoVaultNotes()
+      .then((loadedNotes) => {
+        if (isActive && loadedNotes.length > 0) {
+          setAvailableNotes(loadedNotes)
+          setCompactNavigation((state) => selectLoadedNote(state, loadedNotes))
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isActive = false
+    }
+  }, [])
 
   const selectNote = (note: MobileNote) => {
     setCompactNavigation((state) => transitionCompactNavigation(state, { type: 'selectNote', noteId: note.id }))
@@ -50,7 +69,11 @@ export function MobileApp() {
         {isTablet ? (
           <View style={styles.tabletShell}>
             <SidebarPanel />
-            <NoteListPanel selectedNoteId={compactNavigation.selectedNoteId} onSelectNote={selectNote} />
+            <NoteListPanel
+              notes={availableNotes}
+              selectedNoteId={compactNavigation.selectedNoteId}
+              onSelectNote={selectNote}
+            />
             <EditorPanel note={selectedNote} />
             {showsProperties ? <PropertiesPanel note={selectedNote} /> : null}
           </View>
@@ -58,6 +81,7 @@ export function MobileApp() {
           <CompactShell
             activePanel={compactNavigation.panel}
             note={selectedNote}
+            notes={availableNotes}
             selectedNoteId={compactNavigation.selectedNoteId}
             onNavigate={(event) => setCompactNavigation((state) => transitionCompactNavigation(state, event))}
             onSelectNote={selectNote}
@@ -71,12 +95,14 @@ export function MobileApp() {
 function CompactShell({
   activePanel,
   note,
+  notes,
   onNavigate,
   onSelectNote,
   selectedNoteId,
 }: {
   activePanel: CompactPanel
   note: MobileNote
+  notes: MobileNote[]
   onNavigate: (event: CompactNavigationEvent) => void
   onSelectNote: (note: MobileNote) => void
   selectedNoteId: string
@@ -112,6 +138,7 @@ function CompactShell({
   return (
     <SwipeSurface panel="list" onNavigate={onNavigate}>
       <NoteListPanel
+        notes={notes}
         selectedNoteId={selectedNoteId}
         onOpenSidebar={() => onNavigate({ type: 'openSidebar' })}
         onSelectNote={onSelectNote}
@@ -154,10 +181,12 @@ function SidebarPanel({ onClose }: { onClose?: () => void }) {
 }
 
 function NoteListPanel({
+  notes,
   onOpenSidebar,
   onSelectNote,
   selectedNoteId,
 }: {
+  notes: MobileNote[]
   onOpenSidebar?: () => void
   onSelectNote: (note: MobileNote) => void
   selectedNoteId: string
@@ -203,6 +232,12 @@ function NoteListPanel({
       </Pressable>
     </View>
   )
+}
+
+function selectLoadedNote(state: ReturnType<typeof createCompactNavigationState>, loadedNotes: MobileNote[]) {
+  return loadedNotes.some((note) => note.id === state.selectedNoteId)
+    ? state
+    : { ...state, selectedNoteId: loadedNotes[0].id }
 }
 
 function EditorPanel({

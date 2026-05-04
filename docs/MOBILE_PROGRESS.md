@@ -8,7 +8,7 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 
 - Branch: `codex/mobile`
 - Active phase: Phase 2 - Mobile Shell
-- Active slice: Implement Expo FileSystem vault storage
+- Active slice: Seed app-local mobile demo vault
 - Push policy: commit locally; do not push unless explicitly requested
 - Validation target: iPad/iOS simulator first
 
@@ -53,6 +53,8 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Added a mobile vault storage driver contract plus memory implementation, and connected the mobile vault repository to app-local markdown files behind that storage interface.
 - Added Expo FileSystem as the first app-local mobile vault storage implementation behind the storage driver contract.
 - Created [ADR-0111](./adr/0111-expo-file-system-vault-storage.md) to record the mobile filesystem dependency and app-local vault storage path.
+- Added a mobile vault seeding boundary that writes starter Markdown files only when the app-local vault is empty.
+- Wired the mobile shell to load its starter notes through the native Expo FileSystem storage driver and stored repository path, with fixture notes retained as the fallback while storage initializes.
 
 ## Next Action
 
@@ -60,7 +62,7 @@ Continue Phase 2 with the next mobile shell slice:
 
 1. Dismiss or suppress Expo Go's first-run tools modal during simulator QA so screenshots capture the app without the overlay.
 2. Expand the serializer for additional TenTap output needed by real notes: links, emphasis, code, headings, ordered lists, and task lists.
-3. Wire the app shell to the stored repository once an initial demo vault seed path exists.
+3. Expand the serializer for additional TenTap output needed by real notes: links, emphasis, code, headings, ordered lists, and task lists.
 
 ## Verification Log
 
@@ -161,6 +163,12 @@ Continue Phase 2 with the next mobile shell slice:
 - `pnpm --filter @tolaria/mobile typecheck` passed after Expo storage adapter extraction.
 - CodeScene after Expo storage adapter extraction: `apps/mobile/src/mobileExpoVaultStorage.ts`, `apps/mobile/src/mobileExpoVaultStorage.test.ts`, and `apps/mobile/src/mobileNativeVaultStorage.ts` scored `10`.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after Expo storage adapter extraction.
+- `pnpm --filter @tolaria/mobile test -- src/mobileVaultSeed.test.ts` passed after app-local demo vault seeding: 12 files / 40 tests.
+- `pnpm --filter @tolaria/mobile test` passed after app-local demo vault seeding: 12 files / 40 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after app-local demo vault seeding.
+- CodeScene after app-local demo vault seeding: `apps/mobile/src/MobileApp.tsx`, `apps/mobile/src/mobileDemoVault.ts`, `apps/mobile/src/mobileExpoVaultStorage.ts`, `apps/mobile/src/mobileVaultSeed.ts`, and `apps/mobile/src/mobileVaultSeed.test.ts` scored `10`; `apps/mobile/src/demoData.ts` returned no scorable code and no findings.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after app-local demo vault seeding.
+- `pnpm --filter @tolaria/mobile exec expo start --ios --clear --port 8087` launched on `iPad Pro 13-inch (M4)` after app-local demo vault seeding; screenshot captured at `/tmp/tolaria-mobile-seeded-ipad.png`. The app rendered via the stored repository path behind Expo Go's first-run Tools modal with no red runtime error overlay.
 
 ## Risks / Watch Items
 

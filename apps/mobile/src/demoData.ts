@@ -3,7 +3,7 @@ import { createFixtureMobileVaultRepository } from './mobileVaultRepository'
 
 export type { MobileNote } from './mobileNoteProjection'
 
-const noteContent: MobileNoteSource[] = [
+export const demoNoteSources: MobileNoteSource[] = [
   {
     id: 'workflow',
     type: 'Essay',
@@ -66,9 +66,9 @@ const noteContent: MobileNoteSource[] = [
   },
 ]
 
-export const notes: MobileNote[] = projectMobileNotes(noteContent)
+export const notes: MobileNote[] = projectMobileNotes(demoNoteSources)
 
-export const demoVaultRepository = createFixtureMobileVaultRepository(noteContent)
+export const demoVaultRepository = createFixtureMobileVaultRepository(demoNoteSources)
 
 export const sidebarSections = [
   {
