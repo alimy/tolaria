@@ -689,7 +689,7 @@ The default happy path should be:
 2. App opens system browser / native auth session with PKCE.
 3. User authorizes Tolaria.
 4. User creates or selects a vault repository.
-5. App stores credentials in Keychain / Android Keystore.
+5. App stores credentials through the `expo-secure-store` boundary, backed by Keychain / Android secure storage.
 6. Git remote uses HTTPS token auth.
 
 GitHub App remains the preferred long-term hardening path if Tolaria needs a stronger trust story, selected repository access, or short-lived installation tokens. It likely requires a small backend/token broker because the GitHub App private key must not ship in the mobile app.
@@ -730,6 +730,7 @@ SSH has worse mobile UX and more support burden than HTTPS token auth. It is sti
 Rules:
 
 - Store tokens and private keys only in Keychain / Android Keystore.
+- Keep the JavaScript-facing credential contract at `available` / `missing` plus provider metadata; raw tokens and SSH material stay behind the secure storage and native Git credential callback boundary.
 - Do not persist credentials inside Git remote URLs.
 - Use credential callbacks at operation time.
 - Redact credentials from logs, analytics, crash reports, and support bundles.

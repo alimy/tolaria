@@ -88,12 +88,14 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Reworked the mobile properties panel into expandable Type/Status/Icon/Tags picker rows that show current values first and reveal chip choices on demand.
 - Added the first mobile Git sync plan model, covering local-only vaults, auth-required remotes, ready pull/push actions, active sync operations, and retryable failures.
 - Wired the mobile Git sync plan into the note-list UI through a visible status card for remote-backed vaults while local-only vaults remain chrome-free.
+- Added the first mobile Git credential storage boundary backed by Expo SecureStore, with host/strategy-scoped credential presence records for future GitHub OAuth and SSH flows.
+- Created [ADR-0113](./adr/0113-expo-secure-store-for-mobile-git-credentials.md) for the mobile secure credential storage dependency.
 
 ## Next Action
 
 Continue Phase 4 with editor durability:
 
-1. Add credential storage/auth facades for GitHub OAuth and SSH key presence, still behind model-only Git operations until the native git adapter is selected.
+1. Add the GitHub OAuth session facade and connect successful auth to the secure credential storage boundary, still behind model-only Git operations until the native git adapter is selected.
 2. Continue TenTap Markdown serialization coverage for any editor output observed in simulator QA.
 3. Retry the iOS development-client build after installing an iOS 26.2 simulator runtime in Xcode.
 
@@ -327,6 +329,11 @@ Continue Phase 4 with editor durability:
 - `pnpm --filter @tolaria/mobile typecheck` passed after mobile Git sync status wiring.
 - CodeScene after mobile Git sync status wiring: `apps/mobile/src/MobileApp.tsx`, `apps/mobile/src/MobileGitSyncStatusCard.tsx`, `apps/mobile/src/mobileGitSyncStatus.ts`, `apps/mobile/src/mobileGitSyncStatus.test.ts`, `apps/mobile/src/mobileGitSyncRuntimePlan.test.ts`, and `apps/mobile/src/styles/gitSyncStyles.ts` scored `10`; `apps/mobile/src/mobileGitSyncRuntimePlan.ts` and `apps/mobile/src/styles.ts` returned no scorable code and no findings.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after mobile Git sync status wiring.
+- `pnpm --filter @tolaria/mobile exec expo install expo-secure-store` installed `expo-secure-store@~55.0.13` and added the Expo config plugin.
+- `pnpm --filter @tolaria/mobile test -- src/mobileGitCredentialStorage.test.ts src/mobileSecureGitCredentialStorage.test.ts src/mobileGitSyncRuntimePlan.test.ts src/mobileGitSyncStatus.test.ts` passed after mobile Git credential storage: 33 files / 113 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after mobile Git credential storage.
+- CodeScene after mobile Git credential storage: `apps/mobile/src/mobileGitCredentialStorage.ts`, `apps/mobile/src/mobileGitCredentialStorage.test.ts`, `apps/mobile/src/mobileSecureGitCredentialStorage.ts`, `apps/mobile/src/mobileSecureGitCredentialStorage.test.ts`, and `apps/mobile/src/mobileNativeGitCredentialStorage.ts` scored `10`.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after mobile Git credential storage.
 
 ## Risks / Watch Items
 
