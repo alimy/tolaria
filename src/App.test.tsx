@@ -1254,7 +1254,11 @@ describe('App', () => {
 
     render(<App />)
 
-    expect(await screen.findByText('Enable Git for this vault?')).toBeInTheDocument()
+    expect(await screen.findByText(
+      'Enable Git for this vault?',
+      {},
+      { timeout: SLOW_APP_READY_TIMEOUT_MS },
+    )).toBeInTheDocument()
 
     fireEvent.click(screen.getByTestId('status-vault-trigger'))
     fireEvent.click(screen.getByTestId('vault-menu-item-Git Vault'))

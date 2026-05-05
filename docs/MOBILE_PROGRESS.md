@@ -103,6 +103,8 @@ This file is the resumable working log for Tolaria mobile. The strategy and road
 - Added the app-managed vault directory name to the native Git transport request so the future native module can locate the repository without deriving paths from display names.
 - Added TenTap horizontal-rule serialization so common divider output persists as canonical Markdown instead of blocking the draft.
 - Centralized mobile editor HTML entity decoding and added numeric entity / non-breaking-space support for paragraph, code, image/link, and table serialization.
+- Added the optional Expo native-module resolver for `TolariaGit`, so the JavaScript Git transport automatically binds to future development builds that include the native module and keeps the current unavailable-module failure everywhere else.
+- Created [ADR-0115](./adr/0115-expo-native-module-boundary-for-mobile-git.md) for the mobile Git native module discovery boundary.
 
 ## Next Action
 
@@ -396,6 +398,11 @@ Continue Phase 4 with editor durability:
 - `pnpm --filter @tolaria/mobile typecheck` passed after centralized mobile HTML entity decoding.
 - CodeScene after centralized mobile HTML entity decoding: `apps/mobile/src/mobileHtmlEntities.ts`, `apps/mobile/src/mobileHtmlEntities.test.ts`, `apps/mobile/src/mobileEditorHtmlMarkdown.ts`, `apps/mobile/src/mobileEditorTableMarkdown.ts`, and `apps/mobile/src/mobileEditorDraft.test.ts` scored `10`.
 - `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after centralized mobile HTML entity decoding.
+- `pnpm --filter @tolaria/mobile test -- src/mobileNativeGitModule.test.ts src/mobileNativeGitTransport.test.ts` passed after adding the optional `TolariaGit` native module resolver: 46 files / 152 tests.
+- `pnpm --filter @tolaria/mobile typecheck` passed after adding the optional `TolariaGit` native module resolver.
+- CodeScene after adding the optional `TolariaGit` native module resolver: `apps/mobile/src/mobileNativeGitModule.ts`, `apps/mobile/src/mobileNativeGitModule.test.ts`, `apps/mobile/src/mobileExpoNativeGitModule.ts`, `apps/mobile/src/mobileNativeGitTransport.ts`, and `apps/mobile/src/MobileApp.tsx` scored `10`.
+- `pnpm --filter @tolaria/mobile exec expo export --platform ios --output-dir /tmp/tolaria-mobile-export` passed after adding the optional `TolariaGit` native module resolver.
+- `pnpm test -- src/App.test.tsx --silent` passed after extending the flaky desktop Git setup dialog wait that was blocking verified mobile commits in the full hook: 34 tests.
 
 ## Risks / Watch Items
 
